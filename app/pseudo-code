@@ -1,0 +1,29 @@
+
+init
+- load config into "from", "to" and data[]
+- if (--wipe) rm data/*.wip
+- load data/lastid and update "from" to lastid+1
+- wip = count data/*.wip
+
+@POST /job/{id}
+- if id!=null && have body - save to out/{id}.txt
+- if id!=null markAsComplete(id)
+sync {
+- getId  
+}
+if id==NO_WORK and wip==0 exit after return
+- return id
+
+markAsComplete
+  touch data/{id}.done
+  rm data/{id}.wip
+synch {  wip-- }
+
+getId
+  while exists data/{from}.done
+    rm data/{from}.done
+    from++
+  while exists data/{from}.*
+    from++
+  if (from<to) wip++ && return from
+  else return NO_WORK
